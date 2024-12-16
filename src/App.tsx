@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import cn from 'classnames';
 import { UserWarning } from './UserWarning';
 import { getTodos, USER_ID } from './api/todos';
@@ -17,36 +17,38 @@ export const App: React.FC = () => {
   const [isNotificationVisible, setNotificationVisible] = useState(false);
   const [errorTimeout, setErrorTimeout] = useState<NodeJS.Timeout | null>(null);
 
-  const showError = (message: string) => {
-    setErrors(prev => ({
-      messages: [...new Set([...prev.messages, message])],
-    }));
-    setNotificationVisible(true);
+  const showError = useCallback(
+    (message: string) => {
+      setErrors(prev => ({
+        messages: [...new Set([...prev.messages, message])],
+      }));
+      setNotificationVisible(true);
 
-    // Перезапускаем таймер очистки
-    if (errorTimeout) {
-      clearTimeout(errorTimeout);
-    }
+      if (errorTimeout) {
+        clearTimeout(errorTimeout);
+      }
 
-    const timeout = setTimeout(() => {
-      setErrors({ messages: [] }); // Очищаем ошибки
-      setNotificationVisible(false);
-    }, 3000);
+      const timeout = setTimeout(() => {
+        setErrors({ messages: [] });
+        setNotificationVisible(false);
+      }, 3000);
 
-    setErrorTimeout(timeout);
-  };
+      setErrorTimeout(timeout);
+    },
+    [errorTimeout],
+  );
 
   const handleFormSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
     if (input.trim().length === 0) {
       showError('Title should not be empty');
+
       return;
     }
 
-    console.log('Todo добавлен:', input);
     setInput('');
-    setErrors({ messages: [] }); // Очистка ошибок после успешного ввода
+    setErrors({ messages: [] });
   };
 
   useEffect(() => {
@@ -63,7 +65,7 @@ export const App: React.FC = () => {
     };
 
     fetchTodos();
-  }, []);
+  }, [showError]);
 
   if (!USER_ID) {
     return <UserWarning />;
