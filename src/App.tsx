@@ -38,8 +38,8 @@ export const App: React.FC = () => {
     [errorTimeout],
   );
 
-  const handleFormSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleFormSubmit = (event: React.FormEvent) => {
+    event.preventDefault();
 
     if (input.trim().length === 0) {
       showError('Title should not be empty');
